@@ -1,3 +1,4 @@
+import courier.*;
 import com.google.gson.Gson;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -14,18 +15,20 @@ import static org.hamcrest.Matchers.isA;
 public class CreatingCourierTests {
 
     @Before
+    @Step("Data preparation")
     public void setUp() {
         RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru/";
     }
 
     @After
+    @Step("Deleting data")
     public void dataDelete() {
-        LoginCourier loginCourier = new LoginCourier("Rika", "12345");
+        Courier сourier = new Courier("Rika", "12345", null);
 
         Response responseLogin = given()
                 .header("Content-type", "application/json")
                 .and()
-                .body(loginCourier)
+                .body(сourier)
                 .when()
                 .post("/api/v1/courier/login");
 
@@ -36,7 +39,6 @@ public class CreatingCourierTests {
         String IdString = responseLogin.body().asString();
         Gson gson = new Gson();
         DeleteCourier id = gson.fromJson(IdString, DeleteCourier.class);
-
 
         Response responseDelete = given()
                 .header("Content-type", "application/json")
@@ -49,11 +51,11 @@ public class CreatingCourierTests {
     }
 
     @Test
-    @Step("a method for creating a new courier without errors")
+    @Step("A method for creating a new courier without errors")
     public void createNewCourier() {
-    Courier courier = new Courier("Rika", "12345", "Eri");
+        Courier courier = new Courier("Rika", "12345", "Eri");
 
-    Response response = given()
+        Response response = given()
             .header("Content-type", "application/json")
             .and()
             .body(courier)
@@ -63,6 +65,7 @@ public class CreatingCourierTests {
         response.then().assertThat().body("ok", equalTo(true))
             .and().statusCode(201);
 
+        System.out.println(response.body().asString());
     }
 
     @Test
@@ -97,12 +100,12 @@ public class CreatingCourierTests {
         @Test
         @Step("A method to verify that the courier will not be created with incomplete data")
         public void createCourierWithoutLogin () {
-            CourierWithoutLogin courierWithoutLogin = new CourierWithoutLogin("12345", "Eri");
+            Courier courier = new Courier(null, "12345", "Eri");
 
             Response response = given()
                     .header("Content-type", "application/json")
                     .and()
-                    .body(courierWithoutLogin)
+                    .body(courier)
                     .when()
                     .post("/api/v1/courier");
 
