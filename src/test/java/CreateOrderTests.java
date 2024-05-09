@@ -12,6 +12,7 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.apache.http.HttpStatus.*;
 
 @RunWith(Parameterized.class)
 public class CreateOrderTests {
@@ -53,7 +54,7 @@ public class CreateOrderTests {
     public void createNewOrder() {
         CreateOrder createOrder = new CreateOrder("Снежанна", "Снежевна", "Зимняя, 45", "4", "89123456789", 2, "2024-12-25", "Даже зимой хочется", color);
 
-        Response response = given()
+        response = given()
                 .header("Content-type", "application/json")
                 .and()
                 .body(createOrder)
@@ -64,7 +65,7 @@ public class CreateOrderTests {
 
         response.then().assertThat().body("track", notNullValue())
                 .and()
-                .statusCode(201);
+                .statusCode(SC_CREATED);
 
         System.out.println(response.body().asString());
     }

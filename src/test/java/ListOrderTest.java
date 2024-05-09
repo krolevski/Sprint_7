@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.apache.http.HttpStatus.*;
 
 public class ListOrderTest {
     @Before
@@ -23,7 +24,7 @@ public class ListOrderTest {
 
         responseListOrder.then().assertThat().body("orders", notNullValue())
                         .and()
-                        .statusCode(200);
+                        .statusCode(SC_OK);
 
         System.out.println(responseListOrder.body().asString());
     }

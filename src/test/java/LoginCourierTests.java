@@ -9,8 +9,10 @@ import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.apache.http.HttpStatus.*;
 
 public class LoginCourierTests {
+    private final static String requestLoginCourier = "/api/v1/courier/login";
     @Before
     @Step("Data preparation. Creating a courier")
     public void setUp() {
@@ -26,7 +28,7 @@ public class LoginCourierTests {
                 .post("/api/v1/courier");
 
         response.then().assertThat().body("ok", equalTo(true))
-                .and().statusCode(201);
+                .and().statusCode(SC_CREATED);
     }
 
     @After
@@ -39,11 +41,11 @@ public class LoginCourierTests {
                 .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier/login");
+                .post(requestLoginCourier);
 
         responseLogin.then().assertThat().body("id", isA(Integer.class))
                 .and()
-                .statusCode(200);
+                .statusCode(SC_OK);
 
         String IdString = responseLogin.body().asString();
         Gson gson = new Gson();
@@ -56,7 +58,7 @@ public class LoginCourierTests {
 
         responseDelete.then().assertThat().body("ok", equalTo(true))
                 .and()
-                .statusCode(200);
+                .statusCode(SC_OK);
     }
 
     @Test
@@ -69,11 +71,11 @@ public class LoginCourierTests {
                 .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier/login");
+                .post(requestLoginCourier);
 
         response.then().assertThat().body("id", notNullValue())
                 .and()
-                .statusCode(200);
+                .statusCode(SC_OK);
 
         System.out.println(response.body().asString());
     }
@@ -88,11 +90,11 @@ public class LoginCourierTests {
                 .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier/login");
+                .post(requestLoginCourier);
 
         response.then().assertThat().body("message", equalTo("Учетная запись не найдена"))
                 .and()
-                .statusCode(404);
+                .statusCode(SC_NOT_FOUND);
 
         System.out.println(response.body().asString());
     }
@@ -107,11 +109,11 @@ public class LoginCourierTests {
                 .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier/login");
+                .post(requestLoginCourier);
 
         response.then().assertThat().body("message", equalTo("Недостаточно данных для входа"))
                 .and()
-                .statusCode(400);
+                .statusCode(SC_BAD_REQUEST);
 
         System.out.println(response.body().asString());
     }

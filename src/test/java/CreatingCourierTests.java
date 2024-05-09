@@ -10,9 +10,10 @@ import io.qameta.allure.Step;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isA;
-
+import static org.apache.http.HttpStatus.*;
 
 public class CreatingCourierTests {
+     private final static String requestCreateCourier = "/api/v1/courier";
 
     @Before
     @Step("Data preparation")
@@ -34,7 +35,7 @@ public class CreatingCourierTests {
 
         responseLogin.then().assertThat().body("id", isA(Integer.class))
                 .and()
-                .statusCode(200);
+                .statusCode(SC_OK);
 
         String IdString = responseLogin.body().asString();
         Gson gson = new Gson();
@@ -47,7 +48,7 @@ public class CreatingCourierTests {
 
         responseDelete.then().assertThat().body("ok", equalTo(true))
                 .and()
-                .statusCode(200);
+                .statusCode(SC_OK);
     }
 
     @Test
@@ -60,10 +61,10 @@ public class CreatingCourierTests {
             .and()
             .body(courier)
             .when()
-            .post("/api/v1/courier");
+            .post(requestCreateCourier);
 
         response.then().assertThat().body("ok", equalTo(true))
-            .and().statusCode(201);
+            .and().statusCode(SC_CREATED);
 
         System.out.println(response.body().asString());
     }
@@ -78,21 +79,21 @@ public class CreatingCourierTests {
                 .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier");
+                .post(requestCreateCourier);
 
         response.then().assertThat().body("ok", equalTo(true))
-                .and().statusCode(201);
+                .and().statusCode(SC_CREATED);
 
         Response response2 = given()
                 .header("Content-type", "application/json")
                 .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier");
+                .post(requestCreateCourier);
 
         response2.then().assertThat().body("message", equalTo("Этот логин уже используется"))
                 .and()
-                .statusCode(409);
+                .statusCode(SC_CONFLICT);
 
         System.out.println(response2.body().asString());
     }
@@ -107,11 +108,11 @@ public class CreatingCourierTests {
                     .and()
                     .body(courier)
                     .when()
-                    .post("/api/v1/courier");
+                    .post(requestCreateCourier);
 
             response.then().assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"))
                     .and()
-                    .statusCode(400);
+                    .statusCode(SC_BAD_REQUEST);
 
             System.out.println(response.body().asString());
         }

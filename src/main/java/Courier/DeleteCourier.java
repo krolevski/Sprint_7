@@ -1,5 +1,10 @@
 package courier;
 
+import lombok.*;
+
+@Data
+@Setter
+@Getter
 public class DeleteCourier {
     private String id;
 
@@ -9,13 +14,5 @@ public class DeleteCourier {
 
     public DeleteCourier() {
 
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 }
