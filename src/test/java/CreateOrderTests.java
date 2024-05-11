@@ -1,7 +1,7 @@
 import io.qameta.allure.Step;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import orders.CreateOrder;
+import orders.OrderApi;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,9 +15,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.apache.http.HttpStatus.*;
 
 @RunWith(Parameterized.class)
-public class CreateOrderTests {
+public class CreateOrderTests extends OrderApi {
     private final List<String> color;
-    private Response response;
+    OrderApi orderApi;
+    Response response;
 
     public CreateOrderTests(List<String> color) {
         this.color = color;
@@ -36,7 +37,10 @@ public class CreateOrderTests {
 
     @Before
     public void setUp(){
-        RestAssured.baseURI="https://qa-scooter.praktikum-services.ru/";
+        UrlApi baseURL = new UrlApi();
+        baseURL.baseUrl();
+
+        OrderApi orderApi1 = new OrderApi();
     }
 
     @After
@@ -54,14 +58,7 @@ public class CreateOrderTests {
     public void createNewOrder() {
         CreateOrder createOrder = new CreateOrder("Снежанна", "Снежевна", "Зимняя, 45", "4", "89123456789", 2, "2024-12-25", "Даже зимой хочется", color);
 
-        response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(createOrder)
-                .when()
-                .post("api/v1/orders")
-                .then()
-                .extract().response();
+       Response response = orderApi.newOrders(createOrder);
 
         response.then().assertThat().body("track", notNullValue())
                 .and()

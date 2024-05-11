@@ -1,7 +1,6 @@
 import courier.*;
 import com.google.gson.Gson;
 import io.qameta.allure.Step;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
@@ -11,67 +10,34 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.apache.http.HttpStatus.*;
 
-public class LoginCourierTests {
-    private final static String requestLoginCourier = "/api/v1/courier/login";
+public class LoginCourierTests extends CourierApi {
+    CourierApi courierApi;
+
     @Before
-    @Step("Data preparation. Creating a courier")
+    @Step("Подготовка данных перед тестом")
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru/";
 
-        Courier courier = new Courier("Rika", "12345", "Eri");
+        UrlApi baseURL = new UrlApi();
+        baseURL.baseUrl();
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post("/api/v1/courier");
-
-        response.then().assertThat().body("ok", equalTo(true))
-                .and().statusCode(SC_CREATED);
+        courierApi = new CourierApi();
     }
 
     @After
-    @Step("Deleting data")
+    @Step("Удаление данных после теста")
     public void dataDelete() {
-        Courier courier = new Courier("Rika", "12345", null);
+        Courier courier = new Courier("Rika", "1234", "Eri");
 
-        Response responseLogin = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post(requestLoginCourier);
-
-        responseLogin.then().assertThat().body("id", isA(Integer.class))
-                .and()
-                .statusCode(SC_OK);
-
-        String IdString = responseLogin.body().asString();
-        Gson gson = new Gson();
-        DeleteCourier id = gson.fromJson(IdString, DeleteCourier.class);
-
-        Response responseDelete = given()
-                .header("Content-type", "application/json")
-                .when()
-                .delete(String.format("/api/v1/courier/%s", id.getId()));
-
-        responseDelete.then().assertThat().body("ok", equalTo(true))
-                .and()
-                .statusCode(SC_OK);
+        IdCourier id = courierApi.getIdCourier(courier);
+        courierApi.deleteCourier(id.getId());
     }
 
     @Test
-    @Step("Authorization with the correct data")
+    @Step("Проверка авторизации курьера с верными данными")
     public void courierAuthorization() {
         Courier courier = new Courier("Rika", "12345", null);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post(requestLoginCourier);
+        Response response = courierApi.authorizationCourier(courier);
 
         response.then().assertThat().body("id", notNullValue())
                 .and()
@@ -81,16 +47,11 @@ public class LoginCourierTests {
     }
 
     @Test
-    @Step("Authorization with an invalid password")
+    @Step("Проверка авторизации курьера с неверными данными")
     public void courierAuthorizationWithIncorrectPassword() {
         Courier courier = new Courier("Rika", "неверный пароль", null);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post(requestLoginCourier);
+        Response response = courierApi.authorizationCourier(courier);
 
         response.then().assertThat().body("message", equalTo("Учетная запись не найдена"))
                 .and()
@@ -100,16 +61,11 @@ public class LoginCourierTests {
     }
 
     @Test
-    @Step("Authorization with incomplete data")
+    @Step("Проверка авторизации курьера с неполными данными")
     public void courierAuthorizationWithoutPassword() {
         Courier courier = new Courier("Rika", null, null);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post(requestLoginCourier);
+        Response response = courierApi.authorizationCourier(courier);
 
         response.then().assertThat().body("message", equalTo("Недостаточно данных для входа"))
                 .and()

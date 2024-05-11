@@ -1,67 +1,40 @@
 import courier.*;
-import com.google.gson.Gson;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import io.qameta.allure.Step;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isA;
 import static org.apache.http.HttpStatus.*;
 
-public class CreatingCourierTests {
-     private final static String requestCreateCourier = "/api/v1/courier";
+public class CreatingCourierTests extends CourierApi {
+    CourierApi courierApi;
 
     @Before
-    @Step("Data preparation")
+    @Step("Подготовка данных для теста")
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru/";
+        UrlApi baseURL = new UrlApi();
+        baseURL.baseUrl();
+
+        CourierApi courierApi = new CourierApi();
     }
 
     @After
-    @Step("Deleting data")
+    @Step("Удаление данных после теста")
     public void dataDelete() {
-        Courier сourier = new Courier("Rika", "12345", null);
+        Courier courier = new Courier("Rika", "1234", "Eri");
 
-        Response responseLogin = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(сourier)
-                .when()
-                .post("/api/v1/courier/login");
-
-        responseLogin.then().assertThat().body("id", isA(Integer.class))
-                .and()
-                .statusCode(SC_OK);
-
-        String IdString = responseLogin.body().asString();
-        Gson gson = new Gson();
-        DeleteCourier id = gson.fromJson(IdString, DeleteCourier.class);
-
-        Response responseDelete = given()
-                .header("Content-type", "application/json")
-                .when()
-                .delete(String.format("/api/v1/courier/%s", id.getId()));
-
-        responseDelete.then().assertThat().body("ok", equalTo(true))
-                .and()
-                .statusCode(SC_OK);
+        IdCourier id = courierApi.getIdCourier(courier);
+        courierApi.deleteCourier(id.getId());
     }
 
     @Test
-    @Step("A method for creating a new courier without errors")
+    @Step("Проверка возможности создания курьера")
     public void createNewCourier() {
-        Courier courier = new Courier("Rika", "12345", "Eri");
+        Courier courier = new Courier("Rika", "1234", "Eri");
 
-        Response response = given()
-            .header("Content-type", "application/json")
-            .and()
-            .body(courier)
-            .when()
-            .post(requestCreateCourier);
+        Response response = courierApi.createCourier(courier);
 
         response.then().assertThat().body("ok", equalTo(true))
             .and().statusCode(SC_CREATED);
@@ -70,26 +43,16 @@ public class CreatingCourierTests {
     }
 
     @Test
-    @Step("A method for checking that it is impossible to create a courier with the same username")
+    @Step("Проверка возможности создания двух одинаковых курьеров")
     public void createCourierWithSameUsername() {
         Courier courier = new Courier("Rika", "12345", "Eri");
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post(requestCreateCourier);
+        Response response = courierApi.createCourier(courier);
 
         response.then().assertThat().body("ok", equalTo(true))
                 .and().statusCode(SC_CREATED);
 
-        Response response2 = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(courier)
-                .when()
-                .post(requestCreateCourier);
+        Response response2 = courierApi.createCourier(courier);
 
         response2.then().assertThat().body("message", equalTo("Этот логин уже используется"))
                 .and()
@@ -99,16 +62,11 @@ public class CreatingCourierTests {
     }
 
         @Test
-        @Step("A method to verify that the courier will not be created with incomplete data")
+        @Step("Проверка возможности создания курьера с неполными данными")
         public void createCourierWithoutLogin () {
             Courier courier = new Courier(null, "12345", "Eri");
 
-            Response response = given()
-                    .header("Content-type", "application/json")
-                    .and()
-                    .body(courier)
-                    .when()
-                    .post(requestCreateCourier);
+            Response response = courierApi.createCourier(courier);
 
             response.then().assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"))
                     .and()
