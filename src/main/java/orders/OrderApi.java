@@ -7,8 +7,8 @@ import static io.restassured.RestAssured.given;
 
 public class OrderApi {
     final static String CREATE_ORDER = "/api/v1/orders";
-    public static final String COURIER_ID = "/api/v1/orders?courierId=%s";
-
+    public static final String ORDER_TRACK = "/api/v1/orders/cancel?track=";
+    public Response response;
 
     @Step("Получение списка заказов")
     public Response getCourierOrder() {
@@ -19,11 +19,19 @@ public class OrderApi {
     }
     @Step("Создание заказа")
     public Response newOrders(CreateOrder orders) {
-        return given()
+        return response = given()
                 .header("Content-type", "application/json")
                 .and()
                 .body(orders)
                 .when()
                 .post(CREATE_ORDER);
+    }
+
+    @Step("Удаление заказа")
+    public void deleteOrder() {
+        given()
+                .header("Content-type", "application/json")
+                .when()
+                .put(ORDER_TRACK + response.jsonPath().getString("track"));
     }
 }

@@ -1,4 +1,3 @@
-import courier.Courier;
 import courier.CourierApi;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
@@ -12,7 +11,6 @@ import static org.apache.http.HttpStatus.*;
 public class ListOrderTest  {
     CourierApi courierApi = new CourierApi();
     OrderApi orderApi = new OrderApi();
-    Courier courier = new Courier("Rika", "1234", null);
 
 
     @Before
@@ -20,7 +18,7 @@ public class ListOrderTest  {
         UrlApi baseURL = new UrlApi();
         baseURL.baseUrl();
 
-        courierApi.createCourier(courier);
+        courierApi.createCourier();
     }
 
     @Test

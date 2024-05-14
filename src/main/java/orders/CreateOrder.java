@@ -3,9 +3,6 @@ package orders;
 import java.util.List;
 import lombok.*;
 
-@Data
-@Setter
-@Getter
 public class CreateOrder {
     private String firstName;
     private String lastName;

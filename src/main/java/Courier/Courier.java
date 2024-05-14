@@ -2,9 +2,6 @@ package courier;
 
 import lombok.*;
 
-@Data
-@Setter
-@Getter
 public class Courier {
     private String login;
     private String password;

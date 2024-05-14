@@ -1,12 +1,10 @@
 import courier.*;
-import com.google.gson.Gson;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.apache.http.HttpStatus.*;
 
@@ -16,7 +14,6 @@ public class LoginCourierTests extends CourierApi {
     @Before
     @Step("Подготовка данных перед тестом")
     public void setUp() {
-
         UrlApi baseURL = new UrlApi();
         baseURL.baseUrl();
 
@@ -26,18 +23,13 @@ public class LoginCourierTests extends CourierApi {
     @After
     @Step("Удаление данных после теста")
     public void dataDelete() {
-        Courier courier = new Courier("Rika", "1234", "Eri");
-
-        IdCourier id = courierApi.getIdCourier(courier);
-        courierApi.deleteCourier(id.getId());
+        courierApi.deleteCourier();
     }
 
     @Test
     @Step("Проверка авторизации курьера с верными данными")
     public void courierAuthorization() {
-        Courier courier = new Courier("Rika", "12345", null);
-
-        Response response = courierApi.authorizationCourier(courier);
+        Response response = courierApi.authorizationCourier();
 
         response.then().assertThat().body("id", notNullValue())
                 .and()
@@ -49,9 +41,7 @@ public class LoginCourierTests extends CourierApi {
     @Test
     @Step("Проверка авторизации курьера с неверными данными")
     public void courierAuthorizationWithIncorrectPassword() {
-        Courier courier = new Courier("Rika", "неверный пароль", null);
-
-        Response response = courierApi.authorizationCourier(courier);
+        Response response = courierApi.authorizationCourierNotValidData();
 
         response.then().assertThat().body("message", equalTo("Учетная запись не найдена"))
                 .and()
@@ -63,9 +53,7 @@ public class LoginCourierTests extends CourierApi {
     @Test
     @Step("Проверка авторизации курьера с неполными данными")
     public void courierAuthorizationWithoutPassword() {
-        Courier courier = new Courier("Rika", null, null);
-
-        Response response = courierApi.authorizationCourier(courier);
+        Response response = courierApi.authorizationCourierNullData();
 
         response.then().assertThat().body("message", equalTo("Недостаточно данных для входа"))
                 .and()

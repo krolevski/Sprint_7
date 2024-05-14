@@ -9,8 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.apache.http.HttpStatus.*;
 
@@ -18,7 +16,6 @@ import static org.apache.http.HttpStatus.*;
 public class CreateOrderTests extends OrderApi {
     private final List<String> color;
     OrderApi orderApi;
-    Response response;
 
     public CreateOrderTests(List<String> color) {
         this.color = color;
@@ -36,21 +33,18 @@ public class CreateOrderTests extends OrderApi {
     }
 
     @Before
+    @Step("Подготовка данных перед тестом")
     public void setUp(){
         UrlApi baseURL = new UrlApi();
         baseURL.baseUrl();
 
-        OrderApi orderApi1 = new OrderApi();
+        orderApi = new OrderApi();
     }
 
     @After
     @Step("Удаление заказа после теста")
     public void deleteOrder() {
-        given()
-                .header("Content-type", "application/json")
-                .when()
-                .put("/api/v1/orders/cancel?track=" + response.jsonPath().getString("track"))
-                .then().assertThat().body("ok", equalTo(true));
+        orderApi.deleteOrder();
     }
 
     @Test
@@ -58,7 +52,7 @@ public class CreateOrderTests extends OrderApi {
     public void createNewOrder() {
         CreateOrder createOrder = new CreateOrder("Снежанна", "Снежевна", "Зимняя, 45", "4", "89123456789", 2, "2024-12-25", "Даже зимой хочется", color);
 
-       Response response = orderApi.newOrders(createOrder);
+        Response response = orderApi.newOrders(createOrder);
 
         response.then().assertThat().body("track", notNullValue())
                 .and()
